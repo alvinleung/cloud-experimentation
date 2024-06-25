@@ -1,0 +1,19 @@
+{
+  "name": "warp-mesh-experiment",
+  "version": "1.0.0",
+  "description": "Explore interactivity with mesh",
+  "source": "src/index.html",
+  "scripts": {
+    "dev": "parcel",
+    "build": "parcel build"
+  },
+  "author": "Alvin Leung",
+  "license": "ISC",
+  "dependencies": {
+    "ogl": "^1.0.7",
+    "parcel": "^2.12.0"
+  },
+  "devDependencies": {
+    "@parcel/transformer-glsl": "^2.12.0"
+  }
+}
