@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./types/*.d.ts"]
+    "typeRoots": ["./types/*.d.ts"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node"
   }
 }
