@@ -4,7 +4,7 @@
   "description": "Explore interactivity with mesh",
   "source": "src/index.html",
   "scripts": {
-    "dev": "parcel",
+    "dev": "parcel src/index.html",
     "build": "parcel build"
   },
   "author": "Alvin Leung",
@@ -14,6 +14,7 @@
     "parcel": "^2.12.0"
   },
   "devDependencies": {
-    "@parcel/transformer-glsl": "^2.12.0"
+    "@parcel/transformer-glsl": "^2.12.0",
+    "typescript": "^5.7.3"
   }
 }
