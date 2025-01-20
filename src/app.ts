@@ -119,9 +119,7 @@ loadAssets({
   // orbit
   const orbit = new Orbit(camera);
 
-  let maskPositionTargetUV = new Vec2();
-  let focusPositionTargetUV = new Vec2();
-
+  let mouseTargetUV = new Vec2();
   let mouseVelObserver = new VelocityObserver();
 
   function update(time: number) {
@@ -139,17 +137,16 @@ loadAssets({
 
     hit.forEach((mesh) => {
       // mesh.program.uniforms.uHitUV.value = mesh.hit.uv;
-      maskPositionTargetUV = mesh.hit.uv;
-      focusPositionTargetUV = mesh.hit.uv;
+      mouseTargetUV = mesh.hit.uv;
     });
 
-    lerpVec(maskPositionTargetUV, mesh.program.uniforms.uMaskUV.value, 0.007);
-    lerpVec(focusPositionTargetUV, mesh.program.uniforms.uFocusUV.value, 0.1);
+    lerpVec(mouseTargetUV, mesh.program.uniforms.uMaskUV.value, 0.007);
+    lerpVec(mouseTargetUV, mesh.program.uniforms.uFocusUV.value, 0.1);
 
     const maxRot = 0.05;
 
     mesh.rotation.y = lerp(
-      -maxRot - focusPositionTargetUV.x * -maxRot * 2,
+      -maxRot - mouseTargetUV.x * -maxRot * 2,
       mesh.rotation.y,
       0.01,
     );
@@ -162,7 +159,6 @@ loadAssets({
     mouseVelObserver.recordMovement(mesh.program.uniforms.uFocusUV.value);
     const mouseSpeed = mouseVelObserver.getAverageVelocity().len();
     mesh.program.uniforms.uFocusSize.value = mouseSpeed * 30 + 0.5;
-
     mesh.program.uniforms.uStrength.value = mouseSpeed * 20 + 0.5;
     // console.log(mesh.program.uniforms.uStrength.value);
 

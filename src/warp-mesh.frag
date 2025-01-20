@@ -39,7 +39,7 @@ void main() {
     // vec4 blendedEdge = smoothstep(0.4, 0.9, blurTextureColor + sdfOutput);
     // vec4 blendedEdge = baseTextureColor * smoothstep(0.2, 0.9, blurTextureColor + sdfOutput);
 
-    float strengh = 1.0 - min(uStrength, 0.45);
+    float strengh = 1.0 - min(uStrength, 0.4);
     float threshold = 0.92;
 
     vec4 blendedEdge = smoothstep(threshold - strengh, threshold, smoothstep(threshold - strengh, threshold, blurTextureColor + sdfOutput));
