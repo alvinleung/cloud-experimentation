@@ -100,7 +100,17 @@ loadAssets({
     targetCameraPos.x = isViewingClose ? CAMERA_CLOSE_X : CAMERA_FAR_X;
     targetCameraPos.y = isViewingClose ? CAMERA_CLOSE_Y : CAMERA_FAR_Y;
 
+    const withMouseParallaxOffset = new Vec3().copy(targetCameraPos);
+    const mouseOffsetFactor = isViewingClose ? 0.01 : 0.2;
+    const mouseOffsetAmount = new Vec3(
+      mouse.x * mouseOffsetFactor,
+      mouse.y * mouseOffsetFactor,
+      0,
+    );
+    withMouseParallaxOffset.add(mouseOffsetAmount);
+
     camera.position.lerp(targetCameraPos, 0.05);
+    camera.position.lerp(withMouseParallaxOffset, 0.01);
 
     // orbit.update();
     const transitionProgress =
