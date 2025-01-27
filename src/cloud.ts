@@ -47,6 +47,6 @@ export class Clouds {
     scene.addChild(mesh);
   }
   update(gl: OGLRenderingContext, time: number) {
-    this.uTime.value = time;
+    this.uTime.value = time * 0.000005;
   }
 }
