@@ -1,4 +1,13 @@
-import { Camera, Orbit, Renderer, Transform, Vec2, Vec3 } from "ogl";
+import {
+  Camera,
+  Euler,
+  Mat4,
+  Orbit,
+  Renderer,
+  Transform,
+  Vec2,
+  Vec3,
+} from "ogl";
 
 import { loadAssets } from "./asset-loader";
 import { Garden } from "./garden";
@@ -101,7 +110,7 @@ loadAssets({
     targetCameraPos.y = isViewingClose ? CAMERA_CLOSE_Y : CAMERA_FAR_Y;
 
     const withMouseParallaxOffset = new Vec3().copy(targetCameraPos);
-    const mouseOffsetFactor = isViewingClose ? 0.01 : 0.2;
+    const mouseOffsetFactor = isViewingClose ? 0.01 : 0.3;
     const mouseOffsetAmount = new Vec3(
       mouse.x * mouseOffsetFactor,
       mouse.y * mouseOffsetFactor,
@@ -111,6 +120,16 @@ loadAssets({
 
     camera.position.lerp(targetCameraPos, 0.05);
     camera.position.lerp(withMouseParallaxOffset, 0.01);
+    camera.rotation = new Euler().fromRotationMatrix(
+      new Mat4().lookAt(camera.position, new Vec3(0, 0, 0), new Vec3(0, 1, 0)),
+    );
+    console.clear();
+    console.log(camera.rotation.x);
+    // camera.rotation.y = lerp(
+    //   mouseOffsetFactor * mouse.x * 0.2,
+    //   camera.rotation.y,
+    //   0.1,
+    // );
 
     // orbit.update();
     const transitionProgress =
