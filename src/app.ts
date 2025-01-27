@@ -110,7 +110,7 @@ loadAssets({
     targetCameraPos.y = isViewingClose ? CAMERA_CLOSE_Y : CAMERA_FAR_Y;
 
     const withMouseParallaxOffset = new Vec3().copy(targetCameraPos);
-    const mouseOffsetFactor = isViewingClose ? 0.01 : 0.3;
+    const mouseOffsetFactor = isViewingClose ? 0.01 : 0.2;
     const mouseOffsetAmount = new Vec3(
       mouse.x * mouseOffsetFactor,
       mouse.y * mouseOffsetFactor,
