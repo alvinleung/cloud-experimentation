@@ -1,23 +1,9 @@
-import {
-  Camera,
-  Mesh,
-  Orbit,
-  Plane,
-  Program,
-  Raycast,
-  Renderer,
-  Texture,
-  Transform,
-  Vec2,
-  Vec3,
-} from "ogl";
-
-import VERT from "./warp-mesh.vert";
-import FRAG from "./warp-mesh.frag";
-import BLUR_FRAG from "./blur.frag";
+import { Camera, Orbit, Renderer, Transform, Vec2, Vec3 } from "ogl";
 
 import { loadAssets } from "./asset-loader";
-import { VelocityObserver } from "./VelocityObserver";
+import { Garden } from "./garden";
+import { lerp } from "./utils";
+import { Clouds } from "./cloud";
 
 const renderer = new Renderer();
 const gl = renderer.gl;
@@ -53,114 +39,77 @@ loadAssets({
   gardenClose: new URL("assets/garden-close.png", import.meta.url),
   gardenCloseBlur: new URL("assets/garden-close-blur.png", import.meta.url),
   gardenFar: new URL("assets/garden-far.png", import.meta.url),
+  gardenFarBlur: new URL("assets/garden-far-blur.png", import.meta.url),
+  cloudImage: new URL("assets/cloud.png", import.meta.url),
 }).then((assets) => {
   const scene = new Transform();
-  const geometry = new Plane(gl, {
-    widthSegments: 1,
-    heightSegments: 1,
-    width: 1,
-    height: assets.gardenClose.height / assets.gardenClose.width,
-  });
-
-  const gardenCloseTexture = new Texture(gl);
-  gardenCloseTexture.image = assets.gardenClose;
-
-  const gardenCloseBlurTexture = new Texture(gl, {
-    image: assets.gardenCloseBlur,
-  });
-
-  const program = new Program(gl, {
-    vertex: VERT,
-    fragment: FRAG,
-    uniforms: {
-      uTime: {
-        value: 0,
-      },
-      uMouse: {
-        value: mouse,
-      },
-      uBlurTexture: {
-        value: gardenCloseBlurTexture,
-      },
-      uBaseTexture: {
-        value: gardenCloseTexture,
-      },
-      uAspect: {
-        value: gl.canvas.width / gl.canvas.height,
-      },
-      uHitUV: {
-        value: new Vec2(),
-      },
-      uFocusUV: {
-        value: new Vec2(),
-      },
-      uMaskUV: {
-        value: new Vec2(),
-      },
-      uFocusSize: {
-        value: 0,
-      },
-      uStrength: {
-        value: 0,
-      },
-      uAccentColor: {
-        value: new Vec3(0.3, 0.3, 0.3),
-      },
-    },
-    transparent: true,
-  });
-
-  const mesh = new Mesh(gl, { geometry, program });
-  mesh.setParent(scene);
-
-  // mouse raycast
-  const raycast = new Raycast();
 
   // orbit
-  const orbit = new Orbit(camera);
+  // const orbit = new Orbit(camera);
 
-  let mouseTargetUV = new Vec2();
-  let mouseVelObserver = new VelocityObserver();
+  let isViewingClose = true;
+  const CAMERA_CLOSE_Z = 1;
+  const CAMERA_FAR_Z = 2;
+
+  const CAMERA_FAR_Y = 0.24;
+  const CAMERA_CLOSE_Y = 0;
+
+  const CAMERA_FAR_X = 0;
+  const CAMERA_CLOSE_X = 0;
+
+  const targetCameraPos = new Vec3();
+
+  window.addEventListener("click", () => {
+    isViewingClose = !isViewingClose;
+  });
+
+  const gardenSmall = new Garden(gl, {
+    close: assets.gardenClose,
+    blur: assets.gardenCloseBlur,
+    scale: 1,
+    mouse,
+    scene,
+    camera,
+  });
+
+  const gardenFar = new Garden(gl, {
+    close: assets.gardenFar,
+    blur: assets.gardenFarBlur,
+    scale: 1.79,
+    offset: new Vec3(0.069, 0.317, 0.01),
+    mouse,
+    scene,
+    camera,
+  });
+
+  const cloudsLayer1 = new Clouds(gl, {
+    scene,
+    cloudImage: assets.cloudImage,
+  });
+
+  const cloudsLayer2 = new Clouds(gl, {
+    scene,
+    cloudImage: assets.cloudImage,
+    z: 1.4,
+  });
 
   function update(time: number) {
-    renderer.gl.clearColor(1, 1, 1, 255);
+    renderer.gl.clearColor(254 / 255, 255 / 255, 250 / 255, 1.0);
 
-    // update logic
-    program.uniforms.uTime.value = time;
-    program.uniforms.uAspect.value = gl.canvas.width / gl.canvas.height;
+    targetCameraPos.z = isViewingClose ? CAMERA_CLOSE_Z : CAMERA_FAR_Z;
+    targetCameraPos.x = isViewingClose ? CAMERA_CLOSE_X : CAMERA_FAR_X;
+    targetCameraPos.y = isViewingClose ? CAMERA_CLOSE_Y : CAMERA_FAR_Y;
 
-    orbit.update();
+    camera.position.lerp(targetCameraPos, 0.05);
 
-    // perform mouse ray casting
-    raycast.castMouse(camera, mouse);
-    const hit = raycast.intersectMeshes([mesh]);
+    // orbit.update();
+    const transitionProgress =
+      (camera.position.z - CAMERA_CLOSE_Z) / (CAMERA_FAR_Z - CAMERA_CLOSE_Z);
 
-    hit.forEach((mesh) => {
-      // mesh.program.uniforms.uHitUV.value = mesh.hit.uv;
-      mouseTargetUV = mesh.hit.uv;
-    });
-
-    lerpVec(mouseTargetUV, mesh.program.uniforms.uMaskUV.value, 0.007);
-    lerpVec(mouseTargetUV, mesh.program.uniforms.uFocusUV.value, 0.1);
-
-    const maxRot = 0.05;
-
-    mesh.rotation.y = lerp(
-      -maxRot - mouseTargetUV.x * -maxRot * 2,
-      mesh.rotation.y,
-      0.01,
-    );
-    // mesh.rotation.x = lerp(
-    //   maxRot - focusPositionTargetUV.y * maxRot * 2,
-    //   mesh.rotation.x,
-    //   0.01,
-    // );
-
-    mouseVelObserver.recordMovement(mesh.program.uniforms.uFocusUV.value);
-    const mouseSpeed = mouseVelObserver.getAverageVelocity().len();
-    mesh.program.uniforms.uFocusSize.value = mouseSpeed * 30 + 0.5;
-    mesh.program.uniforms.uStrength.value = mouseSpeed * 20 + 0.5;
-    // console.log(mesh.program.uniforms.uStrength.value);
+    gardenSmall.update(gl, time, 1 - transitionProgress);
+    gardenFar.update(gl, time, transitionProgress);
+    cloudsLayer1.update(gl, time);
+    cloudsLayer2.update(gl, time);
 
     // render to screen
     renderer.render({ scene, camera });
@@ -169,12 +118,3 @@ loadAssets({
 
   requestAnimationFrame(update);
 });
-
-function lerp(target: number, current: number, lerp = 0.05) {
-  return current - (current - target) * lerp;
-}
-
-function lerpVec(target: Vec2, position: Vec2, lerp = 0.05) {
-  position.x = position.x - (position.x - target.x) * lerp;
-  position.y = position.y - (position.y - target.y) * lerp;
-}

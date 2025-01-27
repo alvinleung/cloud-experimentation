@@ -12,6 +12,7 @@ uniform float uStrength;
 
 uniform vec2 uFocusUV;
 uniform vec2 uMaskUV;
+uniform float uTransitionProgress;
 
 uniform float uAspect;
 uniform vec3 uAccentColor;
@@ -31,7 +32,7 @@ void main() {
 
     float time = (1.0 + sin(uTime * .0005)) * 0.5;
 
-    float maskSize = 3.5;
+    float maskSize = uTransitionProgress * 4.5;
     float sdfOutputBig = 1.0 - smoothstep(0.0, 1.0, 1.0 - sdfCircle(uv / maskSize, uMaskUV / maskSize));
 
     vec4 baseTextureColor = texture2D(uBaseTexture, uv);
@@ -51,7 +52,7 @@ void main() {
 
     // gl_FragColor = baseTextureWithMask;
 
-    gl_FragColor = mix(baseTextureWithMask, blendedEdgeColor, blendedEdgeColor.a);
+    gl_FragColor = mix(baseTextureWithMask, blendedEdgeColor, blendedEdgeColor.a) * vec4(1.0, 1.0, 1.0, uTransitionProgress);
 
     // gl_FragColor = baseTextureColor;
     // gl_FragColor = vec4(sin(uMouse * 0.001));

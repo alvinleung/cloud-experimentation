@@ -30,7 +30,6 @@ uniform vec2 uResolution;
 varying vec2 vUv;
 
 void main() {
-
     // Swap with blur9 for higher quality
     // gl_FragColor = blur9(tMap, vUv, uResolution, uDirection);
     gl_FragColor = blur5(tMap, vUv, uResolution, uDirection);
